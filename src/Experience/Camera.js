@@ -1,12 +1,14 @@
 import * as THREE from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+
+import Experience from './Experience'
 
 export default class Camera
 {
     constructor(_options)
     {
         // Options
-        this.experience = window.experience
+        this.experience = new Experience()
         this.config = this.experience.config
         this.debug = this.experience.debug
         this.time = this.experience.time
@@ -24,8 +26,16 @@ export default class Camera
     setInstance()
     {
         // Set up
-        this.instance = new THREE.PerspectiveCamera(25, this.config.width / this.config.height, 0.1, 150)
-        this.instance.rotation.reorder('YXZ')
+        // this.instance = new THREE.PerspectiveCamera(75, this.config.width / this.config.height, 0.1, 1000)
+        this.instance = new THREE.OrthographicCamera(
+            -1, // left
+             1, // right
+             1, // top
+            -1, // bottom
+            -1, // near,
+             1, // far
+          );
+        // this.instance.rotation.reorder('YXZ')
 
         this.scene.add(this.instance)
     }
@@ -43,15 +53,15 @@ export default class Camera
         this.modes.debug = {}
         this.modes.debug.instance = this.instance.clone()
         this.modes.debug.instance.rotation.reorder('YXZ')
-        this.modes.debug.instance.position.set(5, 5, 5)
+        this.modes.debug.instance.position.set(0, 0, 0.1)
         
-        this.modes.debug.orbitControls = new OrbitControls(this.modes.debug.instance, this.targetElement)
-        this.modes.debug.orbitControls.enabled = this.modes.debug.active
-        this.modes.debug.orbitControls.screenSpacePanning = true
-        this.modes.debug.orbitControls.enableKeys = false
-        this.modes.debug.orbitControls.zoomSpeed = 0.25
-        this.modes.debug.orbitControls.enableDamping = true
-        this.modes.debug.orbitControls.update()
+        // this.modes.debug.orbitControls = new OrbitControls(this.modes.debug.instance, this.targetElement)
+        // this.modes.debug.orbitControls.enabled = this.modes.debug.active
+        // this.modes.debug.orbitControls.screenSpacePanning = true
+        // this.modes.debug.orbitControls.enableKeys = false
+        // this.modes.debug.orbitControls.zoomSpeed = 0.25
+        // this.modes.debug.orbitControls.enableDamping = true
+        // this.modes.debug.orbitControls.update()
     }
 
 
@@ -70,7 +80,7 @@ export default class Camera
     update()
     {
         // Update debug orbit controls
-        this.modes.debug.orbitControls.update()
+        // this.modes.debug.orbitControls.update()
 
         // Apply coordinates
         this.instance.position.copy(this.modes[this.mode].instance.position)
@@ -80,6 +90,6 @@ export default class Camera
 
     destroy()
     {
-        this.modes.debug.orbitControls.destroy()
+        // this.modes.debug.orbitControls.destroy()
     }
 }

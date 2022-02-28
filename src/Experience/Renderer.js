@@ -2,11 +2,13 @@ import * as THREE from 'three'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 
+import Experience from './Experience'
+
 export default class Renderer
 {
     constructor(_options = {})
     {
-        this.experience = window.experience
+        this.experience = new Experience()
         this.config = this.experience.config
         this.debug = this.experience.debug
         this.stats = this.experience.stats
@@ -37,7 +39,8 @@ export default class Renderer
         this.instance.domElement.style.height = '100%'
 
         // this.instance.setClearColor(0x414141, 1)
-        this.instance.setClearColor(this.clearColor, 1)
+        // this.instance.setClearColor(this.clearColor, 1)
+        this.instance.autoClearColor = false;
         this.instance.setSize(this.config.width, this.config.height)
         this.instance.setPixelRatio(this.config.pixelRatio)
 
