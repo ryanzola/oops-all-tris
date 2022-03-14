@@ -73,10 +73,14 @@ float RayMarch(vec3 ro, vec3 rd) {
     return dO;
 }
 
-float Hash21(vec2 p) {
-  p = fract(p * vec2(123.45, 234.53));
-  p += dot(p, p+23.4);
-  return fract(p.x * p.y);
+float random(vec2 p) {
+  vec2 k1 = vec2(
+      23.14069263277926, // e^pi (Gelfond's constant)
+      2.665144142690225 // 2^sqrt(2) (Gelfond-Schneider constant)
+  );
+  return fract(
+      cos(dot(p, k1)) * 12345.6789
+  );
 }
 
 float Glitter(vec2 p, float a) {
@@ -85,7 +89,7 @@ float Glitter(vec2 p, float a) {
   vec2 id = floor(p);
   p = fract(p) - 0.5;
 
-  float n = Hash21(id); // get pseudo-random value between 0 and 1
+  float n = random(id); // get pseudo-random value between 0 and 1
 
   float d = length(p);
   float m = smoothstep(0.5 * n, 0.0, d);
@@ -94,14 +98,21 @@ float Glitter(vec2 p, float a) {
   return m;
 }
 
+vec3 RayPlane(vec3 ro, vec3 rd, vec3 p, vec3 n) {
+  float t = max(0.0, dot(p - ro, n) / dot(rd, n));
+
+  return ro + rd * t;
+}
+
 void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
     vec2 uv = (fragCoord-.5*iResolution.xy)/iResolution.y;
     vec2 m = 900.0 * (iMouse/iResolution.xy);
+    float cds = length(uv); // center distance squared
 
     vec3 ro = vec3(3, 0, -3) * 0.8;
     ro.yz *= Rotate(-m.y*3.14+1.);
     ro.y = max(-0.9, ro.y);
-    ro.xz *= Rotate(-m.x*6.2831);
+    ro.xz *= Rotate(-m.x*6.2831 + iTime * 0.15);
     
     vec3 rd = GetRayDir(uv, ro, vec3(0,0.,0), 1.0);
     vec3 col = vec3(0);
@@ -117,7 +128,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
         float cd = length(p); // distance from origin
         col = vec3(dif);
 
-        if(cd > 1.035) {
+        if(cd > 1.035) { // hit the floor
           // col *= vec3(1.0, 0.0, 0.0);
           float s = BallGyroid(-lightDir);
           float w = cd * 0.01;
@@ -128,19 +139,36 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
           p.z += iTime * 0.2;
           col += Glitter(p.xz * 6.0, dot(ro, vec3(2.0)) - iTime) * 4.0 * shadow;
           col /= cd*cd;
+        } else {  // hit the ball
+          float sss = smoothstep(0.15, 0.0, cds);
+
+          float s = BallGyroid(p + sin(p * 10.0 + iTime ) * 0.02);
+          sss*= smoothstep(-0.03, 0.0, s);
+          // sss = min(sss*sss, 2.0);
+          col += sss * vec3(1.0, 0.1, 0.2);
         }
     }
 
-    float cd = length(uv); // center distance squared
-
-    float light = 0.01 / cd;
-    col += light * smoothstep(1.0, 1.5, d - 2.0);
+    
+    
+    // center light
+    float light = 0.01 / cds;
+    vec3 lightCol = vec3(1.0, 0.8, 0.7);
+    col += light * smoothstep(1.0, 1.5, d - 2.0) * lightCol;
 
     float s = BallGyroid(normalize(ro));
     
-    col += light * smoothstep(0.0, 0.02, s);
+    // center light glare
+    col += light * smoothstep(0.0, 0.02, s) * lightCol;
+
+    // volumetrics
+    vec3 pp = RayPlane(ro, rd, vec3(0), normalize(ro)); // plane intersection point
+    float sb = BallGyroid(normalize(pp));
+    sb *= smoothstep(0.2, 0.4, cds); // mask center
+    col += max(0.0, sb);
+
     col = pow(col, vec3(.4545));	// gamma correction
-    
+    col *= 1.0 - cds;
     fragColor = vec4(col,1.0);
 }
 
