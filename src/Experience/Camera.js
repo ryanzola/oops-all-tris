@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
 import Experience from './Experience'
 
@@ -26,15 +26,7 @@ export default class Camera
     setInstance()
     {
         // Set up
-        // this.instance = new THREE.PerspectiveCamera(75, this.config.width / this.config.height, 0.1, 1000)
-        this.instance = new THREE.OrthographicCamera(
-            -1, // left
-             1, // right
-             1, // top
-            -1, // bottom
-            -1, // near,
-             1, // far
-          );
+        this.instance = new THREE.PerspectiveCamera(75, this.config.width / this.config.height, 0.1, 1000)
         // this.instance.rotation.reorder('YXZ')
 
         this.scene.add(this.instance)
@@ -53,15 +45,15 @@ export default class Camera
         this.modes.debug = {}
         this.modes.debug.instance = this.instance.clone()
         this.modes.debug.instance.rotation.reorder('YXZ')
-        this.modes.debug.instance.position.set(0, 0, 0.1)
+        this.modes.debug.instance.position.set(2, 2, 2)
         
-        // this.modes.debug.orbitControls = new OrbitControls(this.modes.debug.instance, this.targetElement)
-        // this.modes.debug.orbitControls.enabled = this.modes.debug.active
-        // this.modes.debug.orbitControls.screenSpacePanning = true
-        // this.modes.debug.orbitControls.enableKeys = false
-        // this.modes.debug.orbitControls.zoomSpeed = 0.25
-        // this.modes.debug.orbitControls.enableDamping = true
-        // this.modes.debug.orbitControls.update()
+        this.modes.debug.orbitControls = new OrbitControls(this.modes.debug.instance, this.targetElement)
+        this.modes.debug.orbitControls.enabled = this.modes.debug.active
+        this.modes.debug.orbitControls.screenSpacePanning = true
+        this.modes.debug.orbitControls.enableKeys = false
+        this.modes.debug.orbitControls.zoomSpeed = 0.25
+        this.modes.debug.orbitControls.enableDamping = true
+        this.modes.debug.orbitControls.update()
     }
 
 

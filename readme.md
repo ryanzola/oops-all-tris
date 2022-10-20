@@ -1,8 +1,11 @@
-# Three.js - Template - Complex
+# Oops All Tris 🔺
 
-🚧 This template is under construction
+Indexing, material extending
+
+Easily extending materials with [Fyrestar's three-extend-material](https://github.com/Fyrestar/THREE.extendMaterial)
 
 ## Setup
+
 Download [Node.js](https://nodejs.org/en/download/).
 Run this followed commands:
 
