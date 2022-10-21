@@ -2,7 +2,7 @@
 
 Indexing, material extending
 
-Easily extending materials with [Fyrestar's three-extend-material](https://github.com/Fyrestar/THREE.extendMaterial)
+Extending materials with [Fyrestar's three-extend-material](https://github.com/Fyrestar/THREE.extendMaterial)
 
 ## Setup
 

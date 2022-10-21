@@ -1,9 +1,9 @@
 import * as THREE from 'three'
 import Experience from './Experience.js'
+import { types } from '@theatre/core'
 
 import vertex from './shaders/canvas/vertex.glsl'
 import fragment from './shaders/canvas/fragment.glsl'
-
 
 export default class Canvas {
   constructor() {
@@ -15,14 +15,8 @@ export default class Canvas {
     this.dancer = this.resources.items.dancer.scene.children[0]
     this.monster = this.resources.items.monster.scene.children[0]
     this.debug = this.experience.debug
-
-    this.settings = {
-      progress: 0
-    }
-
-    if(this.debug) {
-      this.debugFolder = this.debug.addFolder('Canvas')
-    }
+    this.project = this.experience.project
+    this.sheet = this.experience.sheet
 
     this.setGeometry()
     this.setMaterial()
@@ -34,7 +28,7 @@ export default class Canvas {
   setFloor() {
     this.floor = new THREE.Mesh(
       new THREE.PlaneGeometry(15, 15, 100, 100),
-      new THREE.MeshStandardMaterial({ color: 0xffffff })
+      new THREE.MeshStandardMaterial({ color: 0x222222 })
     )
 
     this.floor.rotation.x = -Math.PI * 0.5;
@@ -46,18 +40,49 @@ export default class Canvas {
   }
 
   setGeometry() {
-    this.geometry = new THREE.SphereGeometry(1, 32, 32).toNonIndexed()
+    // this.geometry = new THREE.IcosahedronGeometry(1, 16).toNonIndexed()
+    this.dancer.material = this.material2
+    this.dancer.castShadow = true
+    
+    this.geometry = this.dancer.geometry.toNonIndexed()
+    this.dancer.geometry = this.geometry.toNonIndexed()
+    console.log(this.geometry)
 
     let len = this.geometry.attributes.position.count;
-    let randoms = new Float32Array(len * 3)
+
+    let randoms = new Float32Array(len)
+    let centers = new Float32Array(len * 3)
+
     for(let i = 0; i < len; i+=3) {
       let r = Math.random()
       randoms[i + 0] = r
       randoms[i + 1] = r
       randoms[i + 2] = r
+
+      let x = this.geometry.attributes.position.array[i * 3 + 0]
+      let y = this.geometry.attributes.position.array[i * 3 + 1]
+      let z = this.geometry.attributes.position.array[i * 3 + 2]
+
+      let x1 = this.geometry.attributes.position.array[i * 3 + 3]
+      let y1 = this.geometry.attributes.position.array[i * 3 + 4]
+      let z1 = this.geometry.attributes.position.array[i * 3 + 5]
+
+      let x2 = this.geometry.attributes.position.array[i * 3 + 6]
+      let y2 = this.geometry.attributes.position.array[i * 3 + 7]
+      let z2 = this.geometry.attributes.position.array[i * 3 + 8]
+
+      let center = new THREE.Vector3(x, y, z)
+        .add(new THREE.Vector3(x1, y1, z1))
+        .add(new THREE.Vector3(x2, y2, z2))
+        .divideScalar(3)
+
+        centers.set([center.x, center.y, center.z], i * 3)
+        centers.set([center.x, center.y, center.z], (i + 1) * 3)
+        centers.set([center.x, center.y, center.z], (i + 2) * 3)
     }
 
     this.geometry.setAttribute('aRandom',new THREE.BufferAttribute(randoms, 1))
+    this.geometry.setAttribute('aCenter',new THREE.BufferAttribute(centers, 3))
     
   }
 
@@ -82,6 +107,8 @@ export default class Canvas {
       
       vertexHeader: `
         attribute float aRandom;
+        attribute vec3 aCenter;
+
         uniform float time;
         uniform float progress;
 
@@ -104,11 +131,24 @@ export default class Canvas {
       `,
       vertex: {
         transformEnd: `
-          transformed += aRandom * (0.5 * sin(time) + 0.5) * normal * progress;
+        float prog = (position.y + 1.0) / 2.0;
+        float locprog = clamp((progress - 0.8 * prog) / 0.2, 0.0, 1.0);
+
+        locprog = progress;
+        
+        transformed = transformed - aCenter;
+        transformed += 3.0 * normal * aRandom * (locprog);
+        transformed *= (1.0 - locprog);
+
+
+        transformed += aCenter;
+        transformed = rotate(transformed, vec3(0.0, -1.0, 0.0), aRandom * (locprog) * 3.14 * 2.0);
+        transformed.y += 500.5 * aRandom * (locprog);
         `
       },
     
       uniforms: {
+        diffuse: new THREE.Color(0xffffff),
         roughness: 0.75,
         time: {
           mixed: true,    // Uniform will be passed to a derivative material (MeshDepthMaterial below)
@@ -123,13 +163,13 @@ export default class Canvas {
       }
     
     } );
+    this.material2.side = THREE.DoubleSide
 
-    if(this.debug) {
-      this.debugFolder.add(this.settings, 'progress', 0, 1, 0.01)
-        .onChange(value => {
-          this.material2.uniforms.progress.value = value
-        })
-    }
+    this.materialObj = this.sheet.object('Material', {
+      progress: types.number(this.material2.uniforms.progress.value, { range: [0, 1] }),
+    }).onValuesChange((values) => {
+      this.material2.uniforms.progress.value = values.progress
+    })
   }
 
   setMesh() {
@@ -138,6 +178,7 @@ export default class Canvas {
       template: this.material2
     } );
     this.mesh.castShadow = this.mesh.receiveShadow = true
+    this.mesh.scale.multiplyScalar(0.005)
     this.scene.add(this.mesh)
   }
 
@@ -145,7 +186,7 @@ export default class Canvas {
     const light1 = new THREE.AmbientLight(0xffffff, 0.8)
     this.scene.add(light1)
 
-    const light3 = new THREE.SpotLight(0xffffff, 1, 0, Math.PI / 3, 0.3)
+    const light3 = new THREE.SpotLight(0xffffff, 1, 0, Math.PI / 3, 0.5)
     light3.position.set(0, 2, 2)
     light3.target.position.set(0, 0, 0)
 

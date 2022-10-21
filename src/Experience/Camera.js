@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
+import { types } from '@theatre/core'
+
 import Experience from './Experience'
 
 export default class Camera
@@ -15,6 +17,8 @@ export default class Camera
         this.sizes = this.experience.sizes
         this.targetElement = this.experience.targetElement
         this.scene = this.experience.scene
+        this.project = this.experience.project
+        this.sheet = this.experience.sheet
 
         // Set up
         this.mode = 'debug' // defaultCamera \ debugCamera
@@ -54,6 +58,19 @@ export default class Camera
         this.modes.debug.orbitControls.zoomSpeed = 0.25
         this.modes.debug.orbitControls.enableDamping = true
         this.modes.debug.orbitControls.update()
+
+        this.cameraSheet = this.sheet.object('Camera', {
+            position: types.compound({
+                x: types.number(this.modes.debug.instance.position.x, { range: [-10, 10] }),
+                y: types.number(this.modes.debug.instance.position.y, { range: [-10, 10] }),
+                z: types.number(this.modes.debug.instance.position.z, { range: [-10, 10] }),
+              })
+        }).onValuesChange((values) => {
+            const { x, y, z } = values.position
+          
+            this.modes.debug.instance.position.set(x, y, z)
+            this.modes.debug.instance.lookAt(0, 0, 0)
+          })
     }
 
 

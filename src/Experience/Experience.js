@@ -1,5 +1,8 @@
 import * as THREE from 'three'
 import GUI from 'lil-gui'
+import { getProject } from '@theatre/core'
+import projectState from './state.json'
+
 import './Utils/Expand.js'
 
 import Time from './Utils/Time.js'
@@ -32,6 +35,10 @@ export default class Experience
             console.warn('Missing \'targetElement\' property')
             return
         }
+
+        this.project = getProject('Oops All Triangles', { projectState })
+        this.sheet = this.project.sheet('Scene')
+        this.project.ready.then(() => this.sheet.sequence.play({ iterationCount: Infinity }))
 
         this.time = new Time()
         this.sizes = new Sizes()
@@ -72,7 +79,8 @@ export default class Experience
     {
         if(this.config.debug)
         {
-            this.debug = new GUI()
+            // this.debug = new GUI()
+            
         }
     }
 
