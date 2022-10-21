@@ -95,6 +95,8 @@ export default class Experience
     setScene()
     {
         this.scene = new THREE.Scene()
+        this.scene.background = new THREE.Color(0x121212)
+        this.scene.fog = new THREE.Fog(0x121212, 0.1, 10)
     }
 
     setCamera()

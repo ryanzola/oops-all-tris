@@ -69,7 +69,7 @@ export default class Camera
             const { x, y, z } = values.position
           
             this.modes.debug.instance.position.set(x, y, z)
-            this.modes.debug.instance.lookAt(0, 0, 0)
+            this.modes.debug.instance.lookAt(0, 0.4, 0)
           })
     }
 

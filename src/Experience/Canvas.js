@@ -18,6 +18,8 @@ export default class Canvas {
     this.project = this.experience.project
     this.sheet = this.experience.sheet
 
+    console.log(this.resources.items['dancer-ao'])
+
     this.setGeometry()
     this.setMaterial()
     this.setFloor()
@@ -87,15 +89,15 @@ export default class Canvas {
   }
 
   setMaterial() {
-    this.material = new THREE.ShaderMaterial({
-      // wireframe: true,
-      vertexShader: vertex,
-      fragmentShader: fragment,
-      side: THREE.DoubleSide,
-      uniforms: {
-        time: { value: 0.0 }
-      }
-    })
+    // this.material = new THREE.ShaderMaterial({
+    //   // wireframe: true,
+    //   vertexShader: vertex,
+    //   fragmentShader: fragment,
+    //   side: THREE.DoubleSide,
+    //   uniforms: {
+    //     time: { value: 0.0 }
+    //   }
+    // })
 
     this.material2 = new THREE.MeshStandardMaterial({
       color: 0xff0000
@@ -163,7 +165,9 @@ export default class Canvas {
       }
     
     } );
+
     this.material2.side = THREE.DoubleSide
+    this.material2.normalMap = this.resources.items['dancer-normal']
 
     this.materialObj = this.sheet.object('Material', {
       progress: types.number(this.material2.uniforms.progress.value, { range: [0, 1] }),
@@ -183,7 +187,7 @@ export default class Canvas {
   }
 
   setLights() {
-    const light1 = new THREE.AmbientLight(0xffffff, 0.8)
+    const light1 = new THREE.AmbientLight(0xffffff, 0.2)
     this.scene.add(light1)
 
     const light3 = new THREE.SpotLight(0xffffff, 1, 0, Math.PI / 3, 0.5)
@@ -203,5 +207,6 @@ export default class Canvas {
 
   update() {
     this.material2.uniforms.time.value = this.time.elapsed * 0.001
+    this.material2.needsUpdate = true
   }
 }
