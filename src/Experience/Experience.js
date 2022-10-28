@@ -38,7 +38,7 @@ export default class Experience
 
         this.project = getProject('Oops All Triangles', { projectState })
         this.sheet = this.project.sheet('Scene')
-        this.project.ready.then(() => this.sheet.sequence.play({ iterationCount: Infinity }))
+        // this.project.ready.then(() => this.sheet.sequence.play({ iterationCount: Infinity }))
 
         this.time = new Time()
         this.sizes = new Sizes()

@@ -64,12 +64,18 @@ export default class Camera
                 x: types.number(this.modes.debug.instance.position.x, { range: [-10, 10] }),
                 y: types.number(this.modes.debug.instance.position.y, { range: [-10, 10] }),
                 z: types.number(this.modes.debug.instance.position.z, { range: [-10, 10] }),
-              })
+              }),
+              lookAt: types.compound({
+                x: types.number(0, { range: [-1, 1] }),
+                y: types.number(0.4, { range: [-1, 1] }),
+                z: types.number(0, { range: [-1, 1] }),
+              }),
         }).onValuesChange((values) => {
             const { x, y, z } = values.position
+            const { x: x2, y: y2, z: z2 } = values.lookAt
           
             this.modes.debug.instance.position.set(x, y, z)
-            this.modes.debug.instance.lookAt(0, 0.4, 0)
+            this.modes.debug.instance.lookAt(x2, y2, z2)
           })
     }
 
